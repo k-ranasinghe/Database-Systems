@@ -1,0 +1,133 @@
+SELECT printf("%-10s",name) AS name FROM instructor
+	WHERE dept_name LIKE 'Finance'
+    ORDER BY name ASC;
+
+
+SELECT printf("%-10s",name) AS name FROM student
+	WHERE ID NOT IN ( SELECT ID FROM takes);
+
+
+SELECT printf("%-10s",name) AS name, printf("%-10s",i_ID) AS i_ID FROM student JOIN advisor ON (student.ID = advisor.s_ID)
+    WHERE student.dept_name LIKE 'Biology';
+
+
+CREATE VIEW student_grades AS SELECT takes.ID, name, course_id, grade 
+FROM takes JOIN student ON (takes.ID = student.ID);
+
+SELECT printf("%-10s",name) AS name FROM student_grades 
+    WHERE course_id LIKE 'BIO_101' AND grade LIKE 'A';
+
+
+SELECT printf("%-10s",title) AS title FROM course JOIN prereq ON (course.course_id = prereq.prereq_id)
+    WHERE prereq.course_id = (SELECT course_id FROM course WHERE title LIKE 'Database System Concepts');
+
+
+SELECT printf("%-10s",count(*)) AS 'count(ID)'
+FROM instructor
+WHERE dept_name = 'Finance';
+
+
+CREATE VIEW student_data AS SELECT ID, takes.course_id AS course_id, title, year, semester
+FROM takes
+JOIN course ON (takes.course_id = course.course_id);
+SELECT printf("%-10s",course_id) AS course_id, printf("%-10s",title) AS title, printf("%-10s",year) AS year, printf("%-10s",semester) AS semester
+FROM student_data
+    WHERE ID = 45678
+    ORDER BY course_id ASC;
+
+
+
+CREATE VIEW course_pairs AS SELECT course.course_id AS course_id, prereq_id
+FROM course
+LEFT JOIN prereq ON (prereq.course_id = course.course_id);
+SELECT printf("%-10s",course_id) AS course_id, printf("%-10s",prereq_id) AS prereq_id FROM course_pairs;
+
+
+
+CREATE VIEW student_supervised AS SELECT student.name AS name, instructor.name AS instructor
+FROM student
+JOIN advisor ON (student.ID = advisor.s_ID)
+JOIN instructor ON (advisor.i_ID = instructor.ID);
+SELECT printf("%-10s",name) AS name FROM student_supervised
+    WHERE instructor LIKE 'Eins%'
+    ORDER BY name ASC;
+
+
+
+CREATE VIEW course_pairs AS SELECT course.course_id AS course_id, prereq_id
+FROM course
+LEFT JOIN prereq ON (prereq.course_id = course.course_id);
+SELECT printf("%-10s",title) AS title FROM course_pairs JOIN course ON (course_pairs.prereq_id = course.course_id)
+    GROUP BY prereq_id
+    ORDER BY COUNT(*) DESC
+    LIMIT 1;
+
+
+
+SELECT DISTINCT printf("%-10s",name) AS name FROM student JOIN takes ON (student.ID = takes.ID) JOIN course ON (course.course_id = takes.course_id)
+	WHERE course.dept_name LIKE 'Comp%'
+    ORDER BY student.name ASC;
+
+
+
+SELECT printf("%-10s",ID) AS ID FROM instructor
+	WHERE ID NOT IN ( SELECT ID FROM teaches)
+    ORDER BY instructor.ID ASC;
+
+
+
+SELECT printf("%-10s",ID) AS ID, printf("%-10s",name) AS name FROM instructor
+	WHERE ID NOT IN ( SELECT ID FROM teaches)
+    ORDER BY instructor.name ASC;
+
+
+
+SELECT 	printf("%-10s",count(*)) AS 'count(ID)' FROM takes JOIN course ON (takes.course_id = course.course_id) 
+	WHERE course.title LIKE 'Intro. to Computer Science' AND takes.grade LIKE 'A';
+
+
+
+SELECT printf("%-0.24s",title) AS title, printf("%-10s",year) AS year, printf("%-10s",semester) AS semester, printf("%-10s",grade) AS grade 
+FROM student 
+JOIN takes ON (student.ID = takes.ID) 
+JOIN course ON (course.course_id = takes.course_id)
+	WHERE student.name LIKE 'Shankar'
+    ORDER BY title ASC;
+
+
+
+SELECT printf("%-10s",title) AS title FROM course
+	WHERE course_id LIKE 'CS-1%'
+    ORDER BY title DESC;
+
+
+
+SELECT DISTINCT printf("%-10s",dept_name) AS dept_name FROM instructor
+	WHERE salary >= 60000 AND salary <= 80000
+    ORDER BY dept_name ASC;
+
+
+
+
+SELECT printf("%-10s",name) AS name, printf("%-10s",salary) AS salary FROM instructor
+	ORDER BY name ASC;
+
+
+
+
+CREATE VIEW salary_data AS SELECT dept_name, round(AVG(salary),4) AS avg_sal
+FROM instructor
+GROUP BY dept_name;
+SELECT printf("%-10s",dept_name) AS dept_name, printf("%-10s",avg_sal) AS avg_sal 
+FROM salary_data
+    WHERE avg_sal > 40000
+    ORDER BY dept_name;
+
+
+
+CREATE VIEW student_building AS SELECT takes.ID AS ID, section.course_id AS course_id, section.building AS building
+FROM takes
+JOIN section ON (section.course_id = takes.course_id AND  section.semester = takes.semester);
+SELECT DISTINCT printf("%-10s",ab1.ID) AS pid FROM student_building AS ab1 JOIN student_building AS ab2 ON (ab1.ID = ab2.ID)
+    WHERE ab1.building LIKE 'Watson' AND ab2.building LIKE 'Packard'
+    ORDER BY ab1.ID ASC;

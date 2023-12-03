@@ -1,0 +1,83 @@
+-- Q1
+CREATE TABLE grade_point
+	(Grade			varchar(2), 
+	 Point			varchar(3), 
+	 PRIMARY KEY (Grade)
+	);
+
+
+-- Q2
+INSERT INTO grade_point (Grade, Point)
+VALUES 
+    ('A+', '4.2'),
+    ('A', '4.0'),
+    ('A-', '3.7'),
+    ('B+', '3.5'),
+    ('B', '3.0'),
+    ('B-', '2.7'),
+    ('C+', '2.3'),
+    ('C', '2.0'),
+    ('C-', '1.5'),
+    ('D', '1.0');
+
+-- Q3
+SELECT s.Name, SUM(CASE WHEN g.Point IS NULL THEN NULL ELSE CAST(g.Point AS DECIMAL(3, 1)) END) AS TotalGP
+FROM student s
+LEFT JOIN takes t ON s.ID = t.ID
+LEFT JOIN grade_point g ON t.grade = g.Grade
+GROUP BY s.ID, s.Name
+ORDER BY TotalGP DESC;
+
+-- Q4
+DELIMITER //
+
+CREATE FUNCTION student_count (course_id VARCHAR(20))
+RETURNS INTEGER
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE count INTEGER;
+    SELECT COUNT(*) INTO count
+    FROM takes
+    WHERE takes.course_id = course_id;
+    RETURN count;
+END;
+//
+
+DELIMITER ;
+
+-- Q5
+SELECT course_id
+FROM takes
+GROUP BY course_id
+HAVING student_count(course_id) > 5
+ORDER BY course_id ASC;
+
+-- Q6
+DELIMITER //
+
+CREATE TRIGGER before_insert_takes
+BEFORE INSERT ON takes
+FOR EACH ROW
+BEGIN
+    IF NEW.grade NOT IN ('A+', 'A-', 'A', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D') THEN
+        SET NEW.grade = NULL;
+    END IF;
+END;
+//
+
+DELIMITER ;
+
+-- Q7
+CREATE VIEW faculty AS SELECT ID, name, dept_name
+FROM instructor;
+
+-- Q8
+CREATE USER 'uomcse'@'localhost' IDENTIFIED BY 'uomcse123';
+
+-- Q9
+GRANT SELECT ON university.faculty TO 'uomcse'@'localhost';
+
+-- Q10
+GRANT ALL PRIVILEGES ON university.takes TO 'uomcse'@'localhost';
+
